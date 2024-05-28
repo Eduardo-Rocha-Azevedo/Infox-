@@ -1,6 +1,7 @@
 package com.infoX.telas;
 import java.sql.*;
 import com.infoX.dal.ModuloConexao;
+import java.awt.Color;
 import javax.swing.JOptionPane;
 /**
  *
@@ -26,8 +27,20 @@ public class TelaLogin extends javax.swing.JFrame {
 
             // verifica se existe usuario e senha
             if(rs.next()){
+                // obtendo o conteudo do campo perfil da tabela tbusuarios
+                String perfil = rs.getString("perfil");
+                System.out.println(perfil);
                 TelaPrincipal principal = new TelaPrincipal();
+                // Verifica o perfil do usuario
+                if(perfil.equals("admin")){
+                    TelaPrincipal.menRel.setEnabled(true);
+                    TelaPrincipal.menCadUsu.setEnabled(true);
+                    TelaPrincipal.lblUsuario.setText(rs.getString("usuario"));
+                    TelaPrincipal.lblUsuario.setForeground(new Color(0,0,139));
+                }
+                // exibe o conteudo do campo da tabela
                 principal.setVisible(true);
+                TelaPrincipal.lblUsuario.setText(rs.getString("usuario"));
                 this.dispose();
                 conexao.close();
 
@@ -38,7 +51,7 @@ public class TelaLogin extends javax.swing.JFrame {
 
         }catch (Exception e){
             JOptionPane.showMessageDialog(null, e);
-        }
+        } 
     }
 
     public TelaLogin() {
@@ -69,7 +82,7 @@ public class TelaLogin extends javax.swing.JFrame {
         lblStatus = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("X System - Login");
+        setTitle("InfoX System - Login");
         setBackground(new java.awt.Color(54, 54, 54));
         setBounds(new java.awt.Rectangle(0, 0, 0, 0));
         setResizable(false);
