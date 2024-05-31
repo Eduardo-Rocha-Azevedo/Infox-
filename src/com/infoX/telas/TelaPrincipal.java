@@ -180,7 +180,10 @@ public class TelaPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void menCadCliActionPerformed(java.awt.event.ActionEvent evt) {
-        // 
+        // abrir o form TelaCliente dentro do desktop pane
+        TelaCliente cliente = new TelaCliente();
+        cliente.setVisible(true);
+        desktop.add(cliente);
     }
     private void menCadOsActionPerformed(java.awt.event.ActionEvent evt) {
         // 
