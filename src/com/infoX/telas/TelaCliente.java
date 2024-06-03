@@ -82,6 +82,10 @@ public class TelaCliente extends javax.swing.JInternalFrame {
         txtCliEndereco.setText(tblClientes.getModel().getValueAt(setar, 2).toString());
         txtCliTelefone.setText(tblClientes.getModel().getValueAt(setar, 3).toString());
         txtCliEmail.setText(tblClientes.getModel().getValueAt(setar, 4).toString());
+        
+        //desabilita o btnAdicionar
+        btnAdicionar.setEnabled(false);
+        
     }
 
     // Altera os dados do cliente
@@ -108,6 +112,8 @@ public class TelaCliente extends javax.swing.JInternalFrame {
                     txtCliEndereco.setText(null);
                     txtCliTelefone.setText(null);
                     txtCliEmail.setText(null);
+                    btnAdicionar.setEnabled(true);
+                    btnExcluir.setEnabled(true);
                 }
             }
         } catch (Exception e) {
@@ -116,7 +122,27 @@ public class TelaCliente extends javax.swing.JInternalFrame {
 
     }
     private void excluir(){
-        
+         int confima = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover este cliente?", "Atenção", JOptionPane.YES_NO_OPTION);
+        if (confima == JOptionPane.YES_OPTION) {
+            String sql = "delete from tbclientes where idcli=?";
+            try {
+                pst = conexao.prepareStatement(sql);
+                pst.setString(1, txtID.getText());
+                int apagar = pst.executeUpdate();
+                if (apagar > 0) {
+                    JOptionPane.showMessageDialog(null, "Usuário removido: ");
+                    txtCliNome.setText(null);
+                    txtCliEndereco.setText(null);
+                    txtCliTelefone.setText(null);
+                    txtCliEmail.setText(null);
+                    btnAdicionar.setEnabled(true);
+                    
+                }
+                
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);
+            }
+        }
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -143,6 +169,7 @@ public class TelaCliente extends javax.swing.JInternalFrame {
         jLabel3 = new javax.swing.JLabel();
         txtID = new javax.swing.JTextField();
 
+        setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setTitle("Clientes");
