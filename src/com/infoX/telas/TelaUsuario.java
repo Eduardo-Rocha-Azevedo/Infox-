@@ -117,7 +117,7 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
                 // atualiza a tabela
                 int adicionado = pst.executeUpdate();
                 if (adicionado > 0) {
-                    JOptionPane.showMessageDialog(null, "Dados do usuário alterado: " + adicionado);
+                    JOptionPane.showMessageDialog(null, "Dados do usuário alterado: ");
                     txtUsuNome.setText(null);
                     txtUsuLogin.setText(null);
                     txtUsuSenha.setText(null);
