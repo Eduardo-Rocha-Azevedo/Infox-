@@ -186,7 +186,10 @@ public class TelaPrincipal extends javax.swing.JFrame {
         desktop.add(cliente);
     }
     private void menCadOsActionPerformed(java.awt.event.ActionEvent evt) {
-        // 
+        // Abre tela de OS
+        TelaOS os = new TelaOS();
+        os.setVisible(true);
+        desktop.add(os);
     }
     private void menCadUsuActionPerformed(java.awt.event.ActionEvent evt) {
         // abrir o form TelaUsuario dentro do desktop pane
