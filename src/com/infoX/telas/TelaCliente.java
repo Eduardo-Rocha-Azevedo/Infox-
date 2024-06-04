@@ -265,6 +265,7 @@ public class TelaCliente extends javax.swing.JInternalFrame {
 
         txtID.setEditable(false);
         txtID.setEnabled(false);
+        txtID.setFocusable(false);
         txtID.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtIDActionPerformed(evt);
