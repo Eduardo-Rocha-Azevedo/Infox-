@@ -152,7 +152,10 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
             }
         }
     }
-
+    // Pesquisar uma OS
+    private void pesquisarOs(){
+        
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

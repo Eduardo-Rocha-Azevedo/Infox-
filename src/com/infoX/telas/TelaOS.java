@@ -12,6 +12,8 @@ package com.infoX.telas;
 import java.sql.*;
 import com.infoX.dal.ModuloConexao;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 import net.proteanit.sql.DbUtils;
 
 public class TelaOS extends javax.swing.JInternalFrame {
@@ -19,17 +21,16 @@ public class TelaOS extends javax.swing.JInternalFrame {
     Connection conexao = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
-    
-    //armazena a opcao de acordo com o radio button
+
+    // armazena a opcao de acordo com o radio button
     private String tipo;
-    
+
     public TelaOS() {
         initComponents();
         conexao = ModuloConexao.conector();
     }
 
-    //pesquisa clientes
-
+    // pesquisa clientes
     private void pesquisarClientes() {
         String sql = "select  idcli as id,nomecli as nome, fonecli as fone from tbclientes where nomecli like ?";
         try {
@@ -45,49 +46,171 @@ public class TelaOS extends javax.swing.JInternalFrame {
         }
     }
 
-    //limpa os campos
+    // limpa os campos
     private void setCampo() {
         int setCampo = tblCliente.getSelectedRow();
-        txtID.setText(tblCliente.getModel().getValueAt(setCampo,0).toString());
-    }
-    
-    //Emitir uma OS
-    private void emitirOs(){
-        String sql = "insert into tbos(tipo,situacao,equipamento,defeito,servico,tecnico,valor,idcli)values(?,?,?,?,?,?,?,?)";
-        try{
-            pst = conexao.prepareStatement(sql);
-            pst.setString(1,tipo);
-            pst.setString(2,cboSituacao.getSelectedItem().toString());
-            pst.setString(3,txtEquipamento.getText());
-            pst.setString(4,txtDefeito.getText());
-            pst.setString(5,txtServico.getText());
-            pst.setString(6,txtTecnico.getText());
-            pst.setString(7,txtValor.getText());
-            pst.setString(8,txtID.getText());
+        txtID.setText(tblCliente.getModel().getValueAt(setCampo, 0).toString());
 
-            //validacao dos campos obrigatorios
-            if(txtID.getText().isEmpty() ||txtEquipamento.getText().isEmpty()||txtDefeito.getText().isEmpty()){
+    }
+    //gerencia os botoes
+    private void limpar() {
+        txtOS.setText(null);
+        txtData.setText(null);
+        txtID.setText(null);
+        txtEquipamento.setText(null);
+        txtDefeito.setText(null);
+        txtServico.setText(null);
+        txtTecnico.setText(null);
+        txtValor.setText("0");
+        txtPesquisar.setText(null);
+        ((DefaultTableModel) tblCliente.getModel()).setRowCount(0);
+        cboSituacao.setSelectedItem(" ");
+        // habilitar os objetos
+        btnAdicionar.setEnabled(true);
+        txtPesquisar.setEnabled(true);
+        tblCliente.setVisible(true);
+        
+        // gerenciar os botoes
+        btnEditar.setEnabled(false);
+        btnExcluir.setEnabled(false);
+        btnImprimir.setEnabled(false);
+    }
+
+    // Emitir uma OS
+    private void emitirOs() {
+        String sql = "insert into tbos(tipo,situacao,equipamento,defeito,servico,tecnico,valor,idcli)values(?,?,?,?,?,?,?,?)";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, tipo);
+            pst.setString(2, cboSituacao.getSelectedItem().toString());
+            pst.setString(3, txtEquipamento.getText());
+            pst.setString(4, txtDefeito.getText());
+            pst.setString(5, txtServico.getText());
+            pst.setString(6, txtTecnico.getText());
+            pst.setString(7, txtValor.getText());
+            pst.setString(8, txtID.getText());
+
+            // validacao dos campos obrigatorios
+            if (txtID.getText().isEmpty()
+                    || txtEquipamento.getText().isEmpty()
+                    || txtDefeito.getText().isEmpty()
+                    || cboSituacao.getSelectedItem().equals(" ")) {
                 JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatorios");
-            }else{
+            } else {
                 int adicionado = pst.executeUpdate();
-                if(adicionado > 0){
+                if (adicionado > 0) {
                     JOptionPane.showMessageDialog(null, "OS emitida com sucesso");
-                    txtID.setText(null);
-                    txtEquipamento.setText(null);
-                    txtDefeito.setText(null);
-                    txtServico.setText(null);
-                    txtTecnico.setText(null);
-                    txtValor.setText("0");
+                    //habitando os botoes
+                    btnAdicionar.setEnabled(false);
+                    txtPesquisar.setEnabled(false);
+                    btnImprimir.setEnabled(true);
                 }
             }
-            
-        }catch (Exception e) {
+
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
         }
     }
-    
+
+    // Pesquisar uma OS
+    private void pesquisarOs() {
+        String numOs = JOptionPane.showInputDialog("Numero da Ordem de Serviço");
+        String sql = "select * from tbos where os=" + numOs;
+        try {
+            pst = conexao.prepareStatement(sql);
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                txtOS.setText(rs.getString(1));
+                txtData.setText(rs.getString(2));
+                String rbtTipo = rs.getString(3);
+                if (rbtTipo.equals("Ordem de Serviço")) {
+                    rbtOs.setSelected(true);
+                    tipo = "Ordem de Serviço";
+                } else {
+                    rbtOrcamento.setSelected(true);
+                    tipo = "Orçamento";
+                }
+                // setando o combobox
+                cboSituacao.setSelectedItem(rs.getString(4));
+                txtEquipamento.setText(rs.getString(5));
+                txtDefeito.setText(rs.getString(6));
+                txtServico.setText(rs.getString(7));
+                txtTecnico.setText(rs.getString(8));
+                txtValor.setText(rs.getString(9));
+                txtID.setText(rs.getString(10));
+
+                // evitando problemas
+                btnAdicionar.setEnabled(false);
+                txtPesquisar.setEnabled(false);
+                tblCliente.setVisible(false);
+                // gerenciar os botoes
+                btnImprimir.setEnabled(true);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "OS não cadastrada");
+            }
+        } catch (SQLSyntaxErrorException e) {
+            JOptionPane.showMessageDialog(null, "OS inválida");
+            System.out.println(e);
+        } catch (Exception e2) {
+            JOptionPane.showMessageDialog(null, e2);
+        }
+    }
+
+    private void alterarOs() {
+        String sql = "update tbos set tipo=?,situacao=?,equipamento=?,defeito=?,servico=?,tecnico=?,valor=? where os=?";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, tipo);
+            pst.setString(2, cboSituacao.getSelectedItem().toString());
+            pst.setString(3, txtEquipamento.getText());
+            pst.setString(4, txtDefeito.getText());
+            pst.setString(5, txtServico.getText());
+            pst.setString(6, txtTecnico.getText());
+            pst.setString(7, txtValor.getText());
+            pst.setString(8, txtOS.getText());
+
+            // validacao dos campos obrigatorios
+            if (txtID.getText().isEmpty()
+                    || txtEquipamento.getText().isEmpty()
+                    || txtDefeito.getText().isEmpty()
+                    || cboSituacao.getSelectedItem().equals(" ")) {
+                JOptionPane.showMessageDialog(null, "Preencha todos os campos obrigatorios");
+            } else {
+                int adicionado = pst.executeUpdate();
+                if (adicionado > 0) {
+                    JOptionPane.showMessageDialog(null, "OS alterada com sucesso");
+                    limpar();
+                }
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    private void removerOs() {
+        int confirm = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esta OS?", "Atenção",
+                JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            String sql = "delete from tbos where os=?";
+            try {
+                pst = conexao.prepareStatement(sql);
+                pst.setString(1, txtOS.getText());
+                int apagado = pst.executeUpdate();
+                if (apagado > 0) {
+                    JOptionPane.showMessageDialog(null, "OS removida com sucesso");
+                    limpar();
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);
+            }
+        }
+    }
 
     @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -98,7 +221,7 @@ public class TelaOS extends javax.swing.JInternalFrame {
         txtOS = new javax.swing.JTextField();
         txtData = new javax.swing.JTextField();
         rbtOrcamento = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
+        rbtOs = new javax.swing.JRadioButton();
         cboSituacao = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
@@ -159,6 +282,7 @@ public class TelaOS extends javax.swing.JInternalFrame {
         txtOS.setEditable(false);
 
         txtData.setEditable(false);
+        txtData.setFont(new java.awt.Font("sansserif", 0, 9)); // NOI18N
 
         buttonGroup1.add(rbtOrcamento);
         rbtOrcamento.setText("Orçamento");
@@ -168,11 +292,11 @@ public class TelaOS extends javax.swing.JInternalFrame {
             }
         });
 
-        buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("Ordem de Serviço");
-        jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(rbtOs);
+        rbtOs.setText("Ordem de Serviço");
+        rbtOs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton2ActionPerformed(evt);
+                rbtOsActionPerformed(evt);
             }
         });
 
@@ -185,16 +309,20 @@ public class TelaOS extends javax.swing.JInternalFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtOS, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(txtData, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(26, 26, 26))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2)
+                        .addGap(70, 70, 70))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtData)
+                        .addContainerGap())))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(rbtOrcamento)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton2)
+                .addComponent(rbtOs)
                 .addContainerGap(21, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -211,11 +339,11 @@ public class TelaOS extends javax.swing.JInternalFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rbtOrcamento)
-                    .addComponent(jRadioButton2))
+                    .addComponent(rbtOs))
                 .addContainerGap(20, Short.MAX_VALUE))
         );
 
-        cboSituacao.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Entrega OK", "Orçamento Reprovado", "Aguardando Aprovação", "Aguardando peças", "Abandonado pelo cliente", "Na bancada", "Retornou" }));
+        cboSituacao.setModel(new javax.swing.DefaultComboBoxModel(new String[] { " ", "Entrega OK", "Orçamento Reprovado", "Aguardando Aprovação", "Aguardando peças", "Abandonado pelo cliente", "Na bancada", "Retornou" }));
 
         jLabel3.setText("Situação");
 
@@ -321,18 +449,36 @@ public class TelaOS extends javax.swing.JInternalFrame {
 
         btnExcluir.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/infoX/icones/delete.png"))); // NOI18N
         btnExcluir.setToolTipText("excluir");
+        btnExcluir.setEnabled(false);
         btnExcluir.setPreferredSize(new java.awt.Dimension(68, 68));
+        btnExcluir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExcluirActionPerformed(evt);
+            }
+        });
 
         btnPesquisar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/infoX/icones/read.png"))); // NOI18N
         btnPesquisar.setToolTipText("pesquisar");
         btnPesquisar.setPreferredSize(new java.awt.Dimension(68, 68));
+        btnPesquisar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPesquisarActionPerformed(evt);
+            }
+        });
 
         btnEditar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/infoX/icones/update.png"))); // NOI18N
         btnEditar.setToolTipText("editar");
+        btnEditar.setEnabled(false);
         btnEditar.setPreferredSize(new java.awt.Dimension(68, 68));
+        btnEditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditarActionPerformed(evt);
+            }
+        });
 
         btnImprimir.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/infoX/icones/print.png"))); // NOI18N
         btnImprimir.setToolTipText("imprimir");
+        btnImprimir.setEnabled(false);
         btnImprimir.setPreferredSize(new java.awt.Dimension(68, 68));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -370,15 +516,17 @@ public class TelaOS extends javax.swing.JInternalFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(51, 51, 51)
                         .addComponent(jLabel11)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
+                                .addGap(12, 12, 12)
                                 .addComponent(btnAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnExcluir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnEditar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(txtTecnico, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(3, 3, 3)
+                                .addComponent(txtTecnico, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -439,36 +587,50 @@ public class TelaOS extends javax.swing.JInternalFrame {
         setBounds(0, 0, 641, 480);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtPesquisarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPesquisarKeyReleased
+    private void txtPesquisarKeyReleased(java.awt.event.KeyEvent evt) {// GEN-FIRST:event_txtPesquisarKeyReleased
         pesquisarClientes();
-    }//GEN-LAST:event_txtPesquisarKeyReleased
+    }// GEN-LAST:event_txtPesquisarKeyReleased
 
-    private void tblClienteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblClienteMouseClicked
+    private void tblClienteMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_tblClienteMouseClicked
         setCampo();
-    }//GEN-LAST:event_tblClienteMouseClicked
+    }// GEN-LAST:event_tblClienteMouseClicked
 
-    private void rbtOrcamentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbtOrcamentoActionPerformed
+    private void rbtOrcamentoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbtOrcamentoActionPerformed
         // TODO add your handling code here:
-        tipo="Orçamento";
-    }//GEN-LAST:event_rbtOrcamentoActionPerformed
+        tipo = "Orçamento";
+    }// GEN-LAST:event_rbtOrcamentoActionPerformed
 
-    private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
+    private void rbtOsActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbtOsActionPerformed
         // TODO add your handling code here:
-        tipo="Ordem de Serviço";
-    }//GEN-LAST:event_jRadioButton2ActionPerformed
+        tipo = "Ordem de Serviço";
+    }// GEN-LAST:event_rbtOsActionPerformed
 
-    private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
+    private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {// GEN-FIRST:event_formInternalFrameOpened
 
         // Marca o orçamento como opçaõ ao abrir
         rbtOrcamento.setSelected(true);
         tipo = "Orçamento";
-    }//GEN-LAST:event_formInternalFrameOpened
+    }// GEN-LAST:event_formInternalFrameOpened
 
-    private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarActionPerformed
+    private void btnAdicionarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnAdicionarActionPerformed
         // TODO add your handling code here:
         emitirOs();
-    }//GEN-LAST:event_btnAdicionarActionPerformed
+    }// GEN-LAST:event_btnAdicionarActionPerformed
 
+    private void btnPesquisarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnPesquisarActionPerformed
+        // TODO add your handling code here:
+        pesquisarOs();
+    }// GEN-LAST:event_btnPesquisarActionPerformed
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEditarActionPerformed
+        // TODO add your handling code here:
+        alterarOs();
+    }// GEN-LAST:event_btnEditarActionPerformed
+
+    private void btnExcluirActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnExcluirActionPerformed
+        // TODO add your handling code here:
+        removerOs();
+    }// GEN-LAST:event_btnExcluirActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdicionar;
@@ -492,9 +654,9 @@ public class TelaOS extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JRadioButton rbtOrcamento;
+    private javax.swing.JRadioButton rbtOs;
     private javax.swing.JTable tblCliente;
     private javax.swing.JTextField txtData;
     private javax.swing.JTextField txtDefeito;
