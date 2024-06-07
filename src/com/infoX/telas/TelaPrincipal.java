@@ -5,19 +5,28 @@
  */
 package com.infoX.telas;
 
+import com.infoX.dal.ModuloConexao;
 import java.text.DateFormat;
 import java.util.Date;
 import javax.swing.JOptionPane;
-
+import java.sql.*;
+import java.util.Locale;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
  * @author eEduardo Azevedo
  */
 public class TelaPrincipal extends javax.swing.JFrame {
-
+    Connection conexao = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+    
     public TelaPrincipal() {
         initComponents();
+        conexao = ModuloConexao.conector();
     }
 
     @SuppressWarnings("unchecked")
@@ -34,6 +43,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menCadOs = new javax.swing.JMenuItem();
         menCadUsu = new javax.swing.JMenuItem();
         menRel = new javax.swing.JMenu();
+        menRelCli = new javax.swing.JMenuItem();
         menRelSer = new javax.swing.JMenuItem();
         MenOpc = new javax.swing.JMenu();
         MenOpcSair = new javax.swing.JMenuItem();
@@ -74,7 +84,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         menCad.setText("Cadastro");
 
-        menCadCli.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
+        menCadCli.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_DOWN_MASK));
         menCadCli.setText("Cliente");
         menCadCli.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -83,7 +93,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
         });
         menCad.add(menCadCli);
 
-        menCadOs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.ALT_MASK));
+        menCadOs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.ALT_DOWN_MASK));
         menCadOs.setText("OS");
         menCadOs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -92,7 +102,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
         });
         menCad.add(menCadOs);
 
-        menCadUsu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.ALT_MASK));
+        menCadUsu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.ALT_DOWN_MASK));
         menCadUsu.setText("Usuários");
         menCadUsu.setEnabled(false);
         menCadUsu.addActionListener(new java.awt.event.ActionListener() {
@@ -107,7 +117,16 @@ public class TelaPrincipal extends javax.swing.JFrame {
         menRel.setText("Relatório");
         menRel.setEnabled(false);
 
-        menRelSer.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
+        menRelCli.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        menRelCli.setText("Clientes");
+        menRelCli.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menRelCliActionPerformed(evt);
+            }
+        });
+        menRel.add(menRelCli);
+
+        menRelSer.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_DOWN_MASK));
         menRelSer.setText("Serviços");
         menRel.add(menRelSer);
 
@@ -115,7 +134,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         MenOpc.setText("Opções");
 
-        MenOpcSair.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        MenOpcSair.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_DOWN_MASK));
         MenOpcSair.setText("Sair");
         MenOpcSair.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -128,7 +147,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         MenAju.setText("Ajuda");
 
-        MenAjuSob.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, java.awt.event.InputEvent.ALT_MASK));
+        MenAjuSob.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, java.awt.event.InputEvent.ALT_DOWN_MASK));
         MenAjuSob.setText("Sobre");
         MenAjuSob.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -174,6 +193,26 @@ public class TelaPrincipal extends javax.swing.JFrame {
         setSize(new java.awt.Dimension(931, 562));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void menRelCliActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menRelCliActionPerformed
+         // Gera o relatorio de clientes
+    int confirm = JOptionPane.showConfirmDialog(null, "Confirma a impressão deste relatório?", "Atenção", JOptionPane.YES_NO_OPTION);
+    if (confirm == JOptionPane.YES_OPTION) {
+        // Imprime o relatório
+        try {
+            System.out.println("Conexão: " + (conexao != null ? "Estabelecida" : "Falha")); // Adicionado para verificar a conexão
+            String reportPath = "C:\\reports\\clientes.jasper";
+            System.out.println("Report Path: " + reportPath); // Adicionado para verificar o caminho do relatório
+
+            // Prepara a impressão
+            JasperPrint print = JasperFillManager.fillReport(reportPath, null, conexao);
+            JasperViewer.viewReport(print, false);
+        } catch (Exception e) {
+            e.printStackTrace(); // Adicionado para detalhar a exceção
+            JOptionPane.showMessageDialog(null, "Erro ao gerar o relatório: " + e.getMessage());
+        }
+    }
+    }//GEN-LAST:event_menRelCliActionPerformed
 
     private void menCadCliActionPerformed(java.awt.event.ActionEvent evt) {
         // abrir o form TelaCliente dentro do desktop pane
@@ -267,6 +306,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem menCadOs;
     public static javax.swing.JMenuItem menCadUsu;
     public static javax.swing.JMenu menRel;
+    private javax.swing.JMenuItem menRelCli;
     private javax.swing.JMenuItem menRelSer;
     // End of variables declaration//GEN-END:variables
 }

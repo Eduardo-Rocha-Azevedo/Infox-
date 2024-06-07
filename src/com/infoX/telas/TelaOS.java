@@ -69,6 +69,7 @@ public class TelaOS extends javax.swing.JInternalFrame {
         btnAdicionar.setEnabled(true);
         txtPesquisar.setEnabled(true);
         tblCliente.setVisible(true);
+        btnPesquisar.setEnabled(true);
         
         // gerenciar os botoes
         btnEditar.setEnabled(false);
@@ -115,7 +116,7 @@ public class TelaOS extends javax.swing.JInternalFrame {
     // Pesquisar uma OS
     private void pesquisarOs() {
         String numOs = JOptionPane.showInputDialog("Numero da Ordem de Serviço");
-        String sql = "select * from tbos where os=" + numOs;
+        String sql = "select os,date_format(date_os,'%d/%m/%y - %H:%i'),tipo,situacao,equipamento,defeito,servico,tecnico,valor,idcli from tbos where os=" + numOs;
         try {
             pst = conexao.prepareStatement(sql);
             rs = pst.executeQuery();
@@ -146,6 +147,8 @@ public class TelaOS extends javax.swing.JInternalFrame {
                 tblCliente.setVisible(false);
                 // gerenciar os botoes
                 btnImprimir.setEnabled(true);
+                btnEditar.setEnabled(true);
+                btnExcluir.setEnabled(true);
 
             } else {
                 JOptionPane.showMessageDialog(null, "OS não cadastrada");
