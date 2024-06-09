@@ -50,7 +50,6 @@ public class TelaOS extends javax.swing.JInternalFrame {
     private void setCampo() {
         int setCampo = tblCliente.getSelectedRow();
         txtID.setText(tblCliente.getModel().getValueAt(setCampo, 0).toString());
-
     }
     //gerencia os botoes
     private void limpar() {
