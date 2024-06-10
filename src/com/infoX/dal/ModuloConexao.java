@@ -24,13 +24,20 @@
 package com.infoX.dal;
 
 /**
+ * Conexão com o banco de dados
  *
  * @author Eduardo Azevedo
+ * @version 1.1
  */
 import java.sql.*;
 
 public class ModuloConexao {
 
+    /**
+     * Método responsável pela conexão com o banco
+     *
+     * @return conexao
+     */
     //Metodo para estabelecer a conexao com o banco
     public static Connection conector() {
         Connection conexao = null;

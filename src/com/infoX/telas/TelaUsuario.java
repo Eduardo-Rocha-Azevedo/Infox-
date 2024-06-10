@@ -114,7 +114,9 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
 
     }
 
-    // Altera os dados do usuario
+    /**
+     * Altera os dados do usuario
+     */
     private void alterar() {
         String sql = "update tbusuarios set usuario=?,fone=?,login =?,senha=?, perfil=? where iduser=?";
         try {
@@ -151,7 +153,9 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
         }
     }
 
-    //Remover usuarios
+    /**
+     * Remove o usuario do banco de dados
+     */
     private void remover() {
         int confima = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover este usuário?", "Atenção", JOptionPane.YES_NO_OPTION);
         if (confima == JOptionPane.YES_OPTION) {
@@ -174,10 +178,7 @@ public class TelaUsuario extends javax.swing.JInternalFrame {
             }
         }
     }
-    // Pesquisar uma OS
-    private void pesquisarOs(){
-        
-    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
