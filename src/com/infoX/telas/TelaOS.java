@@ -1,20 +1,43 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The MIT License
+ *
+ * Copyright 2024 Eduardo Azevedo.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.infoX.telas;
 
 /**
- *
+ * Tela de Ordem de Serviço
  * @author Eduardo Azevedo
+ * @version 1.1
  */
 import java.sql.*;
 import com.infoX.dal.ModuloConexao;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 import net.proteanit.sql.DbUtils;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.view.JasperViewer;
 
 public class TelaOS extends javax.swing.JInternalFrame {
 
@@ -30,7 +53,9 @@ public class TelaOS extends javax.swing.JInternalFrame {
         conexao = ModuloConexao.conector();
     }
 
-    // pesquisa clientes
+    /**
+     * Pesquisa os clientes
+     */
     private void pesquisarClientes() {
         String sql = "select  idcli as id,nomecli as nome, fonecli as fone from tbclientes where nomecli like ?";
         try {
@@ -46,12 +71,33 @@ public class TelaOS extends javax.swing.JInternalFrame {
         }
     }
 
-    // limpa os campos
+   /**
+    * Limpa os campos 
+    */
     private void setCampo() {
         int setCampo = tblCliente.getSelectedRow();
         txtID.setText(tblCliente.getModel().getValueAt(setCampo, 0).toString());
     }
-    //gerencia os botoes
+    /**
+     * Recupera o ID da OS
+     */
+    private void recuperarOs(){
+        String sql = "select max(os)from tbos";
+        try {
+            pst = conexao.prepareStatement(sql);
+            rs = pst.executeQuery();
+            
+            if(rs.next()){
+                txtOS.setText(rs.getString(1));
+            }
+            
+        } catch (Exception e) {
+             JOptionPane.showMessageDialog(null, e);
+        }
+    }
+    /**
+     * Gerencia os botões e os campos de texto
+     */
     private void limpar() {
         txtOS.setText(null);
         txtData.setText(null);
@@ -76,7 +122,9 @@ public class TelaOS extends javax.swing.JInternalFrame {
         btnImprimir.setEnabled(false);
     }
 
-    // Emitir uma OS
+    /**
+     * Emite uma OS
+     */
     private void emitirOs() {
         String sql = "insert into tbos(tipo,situacao,equipamento,defeito,servico,tecnico,valor,idcli)values(?,?,?,?,?,?,?,?)";
         try {
@@ -100,6 +148,8 @@ public class TelaOS extends javax.swing.JInternalFrame {
                 int adicionado = pst.executeUpdate();
                 if (adicionado > 0) {
                     JOptionPane.showMessageDialog(null, "OS emitida com sucesso");
+                    //recupera o numero da Os
+                    recuperarOs();
                     //habitando os botoes
                     btnAdicionar.setEnabled(false);
                     txtPesquisar.setEnabled(false);
@@ -112,7 +162,9 @@ public class TelaOS extends javax.swing.JInternalFrame {
         }
     }
 
-    // Pesquisar uma OS
+    /**
+     * Pesquisa uma OS
+     */
     private void pesquisarOs() {
         String numOs = JOptionPane.showInputDialog("Numero da Ordem de Serviço");
         String sql = "select os,date_format(date_os,'%d/%m/%y - %H:%i'),tipo,situacao,equipamento,defeito,servico,tecnico,valor,idcli from tbos where os=" + numOs;
@@ -160,6 +212,9 @@ public class TelaOS extends javax.swing.JInternalFrame {
         }
     }
 
+    /**
+     * Altera uma OS
+     */
     private void alterarOs() {
         String sql = "update tbos set tipo=?,situacao=?,equipamento=?,defeito=?,servico=?,tecnico=?,valor=? where os=?";
         try {
@@ -191,7 +246,9 @@ public class TelaOS extends javax.swing.JInternalFrame {
             JOptionPane.showMessageDialog(null, e);
         }
     }
-
+    /**
+     * Exclui uma OS
+     */
     private void removerOs() {
         int confirm = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover esta OS?", "Atenção",
                 JOptionPane.YES_NO_OPTION);
@@ -210,7 +267,32 @@ public class TelaOS extends javax.swing.JInternalFrame {
             }
         }
     }
+    /**
+     * Emite uma OS usando o Jasper
+     */
+    private void imprimir(){
+          // Imprime a OS
+        int confirm = JOptionPane.showConfirmDialog(null, "Confirma a emissão deste relatório?", "Atenção", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Imprime o relatório
+            try {
+                System.out.println("Conexão: " + (conexao != null ? "Estabelecida" : "Falha")); // Adicionado para verificar a conexão
+                String reportPath = "C:\\reports\\os.jasper";
+                System.out.println("Report Path: " + reportPath); // Adicionado para verificar o caminho do relatório
+                
+                // HASH MAP
+                HashMap filtro = new HashMap();
+                filtro.put("os", Integer.parseInt(txtOS.getText()));
 
+                // Prepara a impressão
+                JasperPrint print = JasperFillManager.fillReport(reportPath, filtro, conexao);
+                JasperViewer.viewReport(print, false);
+            } catch (Exception e) {
+                e.printStackTrace(); // Adicionado para detalhar a exceção
+                JOptionPane.showMessageDialog(null, "Erro ao gerar o relatório: " + e.getMessage());
+            }
+        }
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -482,6 +564,11 @@ public class TelaOS extends javax.swing.JInternalFrame {
         btnImprimir.setToolTipText("imprimir");
         btnImprimir.setEnabled(false);
         btnImprimir.setPreferredSize(new java.awt.Dimension(68, 68));
+        btnImprimir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnImprimirActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -588,6 +675,11 @@ public class TelaOS extends javax.swing.JInternalFrame {
 
         setBounds(0, 0, 641, 480);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnImprimirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImprimirActionPerformed
+        // TODO add your handling code here:
+       imprimir();
+    }//GEN-LAST:event_btnImprimirActionPerformed
 
     private void txtPesquisarKeyReleased(java.awt.event.KeyEvent evt) {// GEN-FIRST:event_txtPesquisarKeyReleased
         pesquisarClientes();

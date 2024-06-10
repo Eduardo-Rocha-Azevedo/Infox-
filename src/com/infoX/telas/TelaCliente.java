@@ -1,13 +1,32 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The MIT License
+ *
+ * Copyright 2024 Eduardo Azevedo.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.infoX.telas;
 
 /**
- *
+ * Tela de cliente
  * @author Eduardo Azevedo
+ * @version 1.1
  */
 import java.sql.*;
 import com.infoX.dal.ModuloConexao;
@@ -26,8 +45,11 @@ public class TelaCliente extends javax.swing.JInternalFrame {
         initComponents();
         conexao = ModuloConexao.conector();
     }
-
-    // Adiciona os Clientes
+    
+    
+    /**
+     * Adiciona clientes no banco de dados
+     */
     private void adicionar() {
         String sql = "insert into tbclientes(nomecli,endcli,fonecli, emailcli)values(?,?,?,?)";
         try {
@@ -56,7 +78,9 @@ public class TelaCliente extends javax.swing.JInternalFrame {
 
     }
 
-    // Pesquisa os clientes
+    /**
+     * Pesquisa os clientes
+     */
     private void pesquisarClientes() {
         String sql = "select  idcli as id,nomecli as nome, endcli as endereço, fonecli as fone, emailcli as email from tbclientes where nomecli like ?";
         try {
@@ -72,7 +96,9 @@ public class TelaCliente extends javax.swing.JInternalFrame {
         }
     }
 
-    // Preenche os dados do form com o conteudo da tabela
+    /**
+     * Preenche os dados do form com o conteudo da tabela
+     */
     public void setCampos() {
         int setar = tblClientes.getSelectedRow();
         txtID.setText(tblClientes.getModel().getValueAt(setar, 0).toString());
@@ -86,7 +112,9 @@ public class TelaCliente extends javax.swing.JInternalFrame {
 
     }
 
-    // Altera os dados do cliente
+    /**
+     * Altera os dados do cliente
+    */
     private void alterar() {
         String sql = "update tbclientes set nomecli=?,endcli=?,fonecli=?,emailcli=? where idcli=?";
         try {
@@ -115,7 +143,9 @@ public class TelaCliente extends javax.swing.JInternalFrame {
         }
 
     }
-
+    /**
+     * Exclui os clintes com base no ID
+     */
     private void excluir() {
         int confima = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover este cliente?", "Atenção", JOptionPane.YES_NO_OPTION);
         if (confima == JOptionPane.YES_OPTION) {
@@ -136,7 +166,9 @@ public class TelaCliente extends javax.swing.JInternalFrame {
             }
         }
     }
-
+    /**
+     * Método para limpar os campos 
+     */
     private void clear() {
         txtID.setText(null);
         txtPesquisar.setText(null);
